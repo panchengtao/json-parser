@@ -1,7 +1,3 @@
-/**
- * 词法解析器
- *
- */
 const EOF = -1;
 const EOF_TYPE = 1;
 
@@ -32,7 +28,6 @@ class Lexer {
 
 Lexer.EOF = EOF;
 Lexer.EOF_TYPE = EOF_TYPE;
-
 
 const LBRACE = 2; // 左花括号
 const RBRACE = 3; // 右花括号
@@ -211,7 +206,6 @@ class JSONLexer extends Lexer {
     }
 }
 
-
 class Token {
     constructor(type, text) {
         this.type = type;
@@ -224,4 +218,41 @@ class Token {
     }
 }
 
-module.exports = JSONLexer;
+class Parser {
+    constructor(lexer) {
+        this.lexer = lexer;
+        this.lookahead = this.consume();
+    }
+
+    consume() {
+        this.lookahead[this.index] = this.lexer.nextToken();
+    }
+
+    match(type) {
+        if (this.lookahead.type === type) {
+            this.consume()
+        } else {
+            throw new Error(`Expecting ${getTokenName(type)}; Found ${this.getToken()}`)
+        }
+    }
+}
+
+class JSONParser extends Parser {
+    array() {
+        this.match(LBRACK);
+        this.jsonElements();
+        this.match(RBRACK);
+    }
+
+    jsonElements() {
+        this.jsonElement();
+        while (this.lookahead.type === COMMA) {
+            this.match(COMMA);
+            this.jsonElement();
+        }
+    }
+
+    jsonElement() {
+        throw new Error(`Expecting name or list; Found ${this.getToken(1)}`)
+    }
+}

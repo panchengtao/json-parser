@@ -1,5 +1,5 @@
 const expect = require('expect');
-const ListLexer = require('./lexer');
+const jsonLexer = require('./lexer');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,11 +8,11 @@ describe('test JSONLexer', () => {
         fs.readFile(path.join(__dirname, "./example1.json"), "utf8", function read(err, data) {
             expect(err).toEqual(null);
 
-            let lexer = new ListLexer(data.toString());
+            let lexer = new jsonLexer(data.toString());
             let tokens = [];
             let token = lexer.nextToken();
 
-            while (token.type !== ListLexer.EOF_TYPE) {
+            while (token.type !== jsonLexer.EOF_TYPE) {
                 tokens.push(token);
                 token = lexer.nextToken();
             }
