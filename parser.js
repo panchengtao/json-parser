@@ -225,34 +225,65 @@ class Parser {
     }
 
     consume() {
-        this.lookahead[this.index] = this.lexer.nextToken();
+        this.lookahead = this.lexer.nextToken();
     }
 
     match(type) {
         if (this.lookahead.type === type) {
-            this.consume()
+            this.consume();
         } else {
-            throw new Error(`Expecting ${getTokenName(type)}; Found ${this.getToken()}`)
+            throw new Error(``)
         }
     }
 }
 
 class JSONParser extends Parser {
-    array() {
-        this.match(LBRACK);
-        this.jsonElements();
-        this.match(RBRACK);
+    constructor(lexer) {
+        super(lexer);
     }
 
-    jsonElements() {
-        this.jsonElement();
-        while (this.lookahead.type === COMMA) {
-            this.match(COMMA);
-            this.jsonElement();
+    value() {
+        if (this.lookahead.type === NULL) {
+            this.match(NULL);
+        } else if (this.lookahead.type === BOOLEAN) {
+            this.match(BOOLEAN);
+        } else if (this.lookahead.type === STRING) {
+            this.match(STRING);
+        } else if (this.lookahead.type === NUMBER) {
+            this.match(NUMBER);
+        } else if (this.lookahead.type === LBRACE) {
+            this.obj();
+        } else {
+            this.array();
         }
     }
 
-    jsonElement() {
-        throw new Error(`Expecting name or list; Found ${this.getToken(1)}`)
+    obj() {
+        this.match(LBRACE);
+        if (this.lookahead.type === RBRACE) {
+            this.match(RBRACE);
+        } else {
+            this.value();
+        }
+    }
+
+    pair() {
+        this.match(STRING);
+        this.match(COLON);
+        this.value();
+    }
+
+    array() {
+        this.match(LBRACK);
+        if (this.lookahead.type === RBRACK) {
+            this.match(RBRACK)
+        } else {
+            this.value();
+            while (this.lookahead.type === COMMA) {
+                this.match(COMMA);
+                this.value();
+            }
+            this.match(RBRACK);
+        }
     }
 }
